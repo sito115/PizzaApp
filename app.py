@@ -12,7 +12,7 @@ INIT_FLOUR: float = 1000.
 INIT_HYDRATION: float = 0.7
 INIT_POULISH_MAIN_RATIO: float = 0.3
 INIT_WEIGHT_PER_PIZZA: float = 250.
-PAGE_TITLE = 'Pizza Dough Calculator 1.0'
+PAGE_TITLE = 'Pizza Dough Calculator 1.1'
 
 poulish_ingredients: dict[str, Union[float, int]] = {
     str(Ingredients.FLOUR): 300,
