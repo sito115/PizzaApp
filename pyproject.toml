@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "wordpress"
+version = "0.1.0"
+description = ""
+authors = ["sito115 <thomas@esimad.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.9.2"
+pypdf2 = "^3.0.1"
+spire-pdf = "^10.8.1"
+markdown2 = "^2.5.0"
+fpdf2 = "^2.7.9"
+
+[tool.poetry.group.dev.dependencies]
+streamlit = "^1.38.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
