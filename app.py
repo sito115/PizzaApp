@@ -269,7 +269,7 @@ def main():
     with expand_recipe:
         st.write(st.session_state.recipe_text)
         
-    st.write(st.session_state)
+    # st.write(st.session_state)
 
 
 if __name__ == '__main__':
