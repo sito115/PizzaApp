@@ -4,7 +4,7 @@ from typing import Union
 from dough_class import Ingredients, Dough
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
-import markdown2
+import numpy as np
 from streamlit.delta_generator import DeltaGenerator
 
 
@@ -53,13 +53,12 @@ def generate_recipe_pdf(markdown_text: str) -> str:
     pdf.output(pdf_file_name)
     return pdf_file_name
 
-def update_ingredients_table():
+def update_ingredients_table(poulish_main_dough_ratio:float = np.nan):
 
-    poulish_main_dough_ratio = st.session_state.poulish_main_dough_ratio
-    if st.session_state.key_ingredient == str(Ingredients.WATER):
-        poulish_water = st.session_state.poulish.ingredients[str(Ingredients.WATER)]
-        total_water = poulish_water + st.session_state.main_dough.ingredients[str(Ingredients.WATER)]
-        poulish_main_dough_ratio = poulish_water / total_water
+    if np.isnan(poulish_main_dough_ratio):
+        poulish_ing_amount = st.session_state.poulish.ingredients[st.session_state.key_ingredient]
+        total_amount = poulish_ing_amount + st.session_state.main_dough.ingredients[st.session_state.key_ingredient]
+        poulish_main_dough_ratio = poulish_ing_amount / total_amount
 
     st.session_state['poulish'].upgrade_ingredients_proportion(st.session_state.key_ingredient,
                                                                poulish_main_dough_ratio*st.session_state.key_ingredient_input)
@@ -68,6 +67,18 @@ def update_ingredients_table():
                                                                   (1 - poulish_main_dough_ratio)*st.session_state.key_ingredient_input)    
     total_sum = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
     st.session_state['total_pizzas'] = total_sum / st.session_state.weight_per_pizza
+
+
+def update_poulish_main_dough_ratio():
+    poulish_flour = st.session_state['poulish'].get_ingredient_quantity(str(Ingredients.FLOUR)) 
+    main_dough_flour = st.session_state['main_dough'].get_ingredient_quantity(str(Ingredients.FLOUR))
+    total_flour = poulish_flour + main_dough_flour
+
+    st.session_state['poulish'].upgrade_ingredients_proportion(str(Ingredients.FLOUR),
+                                                               st.session_state.poulish_main_dough_ratio*total_flour)
+    st.session_state['main_dough'].upgrade_ingredients_proportion(str(Ingredients.FLOUR),
+                                                                  (1 - st.session_state.poulish_main_dough_ratio)*total_flour)   
+
 
 
 def update_key_ing_input():
@@ -149,7 +160,7 @@ def generate_reset_button(col : DeltaGenerator):
         st.session_state.total_pizzas = INIT_N_PIZZAS
         st.session_state.weight_per_pizza = INIT_WEIGHT_PER_PIZZA
         st.session_state.key_ingredient = Ingredients.FLOUR.value
-        update_ingredients_table()
+        update_ingredients_table(INIT_POULISH_MAIN_RATIO)
 
 def generate_print_button(col : DeltaGenerator):
     col.button('Generate PDF from recipe (not formatted yet)', key='is_download_pdf')
@@ -221,7 +232,7 @@ def generate_advanced_settings(expander: DeltaGenerator):
                     min_value = 0.,
                     max_value = 1.,
                     value=INIT_POULISH_MAIN_RATIO,
-                    on_change=update_ingredients_table)
+                    on_change=update_poulish_main_dough_ratio)
 
         st.slider('Hydration [%]',
                     key = 'hydration',
