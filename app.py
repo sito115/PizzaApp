@@ -54,11 +54,18 @@ def generate_recipe_pdf(markdown_text: str) -> str:
     return pdf_file_name
 
 def update_ingredients_table():
+
+    poulish_main_dough_ratio = st.session_state.poulish_main_dough_ratio
+    if st.session_state.key_ingredient == str(Ingredients.WATER):
+        poulish_water = st.session_state.poulish.ingredients[str(Ingredients.WATER)]
+        total_water = poulish_water + st.session_state.main_dough.ingredients[str(Ingredients.WATER)]
+        poulish_main_dough_ratio = poulish_water / total_water
+
     st.session_state['poulish'].upgrade_ingredients_proportion(st.session_state.key_ingredient,
-                                                               st.session_state.poulish_main_dough_ratio*st.session_state.key_ingredient_input)
+                                                               poulish_main_dough_ratio*st.session_state.key_ingredient_input)
     st.session_state['main_dough'].upgrade_liquid_from_hydration(st.session_state.hydration)
     st.session_state['main_dough'].upgrade_ingredients_proportion(st.session_state.key_ingredient,
-                                                                  (1 - st.session_state.poulish_main_dough_ratio)*st.session_state.key_ingredient_input)    
+                                                                  (1 - poulish_main_dough_ratio)*st.session_state.key_ingredient_input)    
     total_sum = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
     st.session_state['total_pizzas'] = total_sum / st.session_state.weight_per_pizza
 
@@ -103,26 +110,30 @@ def initilise_session():
     if 'weight_per_pizza' not in st.session_state:
         st.session_state['weight_per_pizza'] = INIT_WEIGHT_PER_PIZZA 
 
+    if 'key_ingredient_input' not in st.session_state:
+        st.session_state['key_ingredient_input'] = INIT_FLOUR 
+
     st.session_state['total_sum'] = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
 
     recipe_text = f'''
         ## Pizza Recipe
         Yields {st.session_state['total_pizzas']:.0f} pizzas à {st.session_state['weight_per_pizza']:.1f} g.
         ### Poulish
-        1. Resolve {st.session_state['poulish'].ingredients[Ingredients.YEAST.value]:.1f} grams of yeast in {st.session_state['poulish'].ingredients[Ingredients.WATER.value]:.1f} mL of water.
-        2. Add {st.session_state['poulish'].ingredients[Ingredients.HONEY.value]:.1f} g of honey and resolve.
+        1. Dissolve {st.session_state['poulish'].ingredients[Ingredients.YEAST.value]:.1f} grams of yeast in {st.session_state['poulish'].ingredients[Ingredients.WATER.value]:.1f} mL of water.
+        2. Add {st.session_state['poulish'].ingredients[Ingredients.HONEY.value]:.1f} g of honey and dissolve.
         3. Add {st.session_state['poulish'].ingredients[Ingredients.FLOUR.value]:.1f} g of flour and mix.
-        4. Cover the poulish in an airproof container and let it for 30 min at room temperature.
-        5. Then put it in the frigde for 16 - 24h.
+        4. Cover the poulish in an airtight  container and let it rest for 30 min at room temperature.
+        5. Then, put it in the frigde for 16 - 24h.
         ### Main Dough
-        1. Take the poulish out the fridge ca. 30 min before starting with the main dough.
-        2. Add {st.session_state['main_dough'].ingredients[Ingredients.WATER.value]:.1f} mL and resolve the poulish.
+        1. Take the poulish out of the fridge ca. 30 min before starting the main dough.
+        2. Add {st.session_state['main_dough'].ingredients[Ingredients.WATER.value]:.1f} mL and dissolve the poulish.
         3. Add {st.session_state['main_dough'].ingredients[Ingredients.FLOUR.value]:.1f} g of flour and knead for 10 min.
         4. Add {st.session_state['main_dough'].ingredients[Ingredients.SALT.value]:.1f} g of salt and knead for 5 min.
-        5. When the dough starts to stick add {st.session_state['main_dough'].ingredients[Ingredients.OLIVE_OIL.value]:.1f} g of olive oil.
-        6. Then put the dough in the frigde for 16 - 24h.
-        7. Take the dough out the fridge ca. 30 min before starting with the dough balls.
-        8. Make {st.session_state['total_pizzas']:.0f} balls à {st.session_state['weight_per_pizza']:.1f} g.
+        5. When the dough starts to become stick, add {st.session_state['main_dough'].ingredients[Ingredients.OLIVE_OIL.value]:.1f} g of olive oil.
+        6. Then, place the dough in the frigde for 16 - 24h.
+        7. Take the dough out of the fridge ca. 30 min before forming the doigh balls. 
+        8. Divide the dough into {st.session_state['total_pizzas']:.0f} balls à {st.session_state['weight_per_pizza']:.1f} g.
+        9. Let them rest for min. 1.5 h.
         '''
         
     st.session_state['recipe_text'] = recipe_text
@@ -163,7 +174,7 @@ def generate_base_settings(expander: DeltaGenerator):
 
             st.selectbox(
                 'Select an ingredient to set the proportions of the recipe.',
-                (ingredient.value for ingredient in [Ingredients.FLOUR, Ingredients.WATER]),
+                (str(ingredient) for ingredient in [Ingredients.FLOUR, Ingredients.WATER]),
                 key='key_ingredient',
                 on_change=view_key_ingredient_quantities
             )
@@ -174,7 +185,7 @@ def generate_base_settings(expander: DeltaGenerator):
                             key = 'key_ingredient_input',
                             min_value = 0.,
                             max_value = 10_000.,
-                            value=INIT_FLOUR,
+                            # value=INIT_FLOUR,
                             step = 100.,
                             on_change = update_key_ing_slider)
 
@@ -258,7 +269,7 @@ def main():
     with expand_recipe:
         st.write(st.session_state.recipe_text)
         
-    # st.write(st.session_state)
+    #st.write(st.session_state)
 
 
 if __name__ == '__main__':
