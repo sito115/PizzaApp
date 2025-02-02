@@ -35,17 +35,6 @@ def generate_recipe_pdf(markdown_text: str) -> str:
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font('Courier',size=12)
-    
-    # # Split text into multiple lines to fit in the PDF
-    # lines = html.splitlines()
-    # for line in lines:
-    #     pdf.cell(200,
-    #             10,
-    #             text=line,
-    #             new_x=XPos.LMARGIN,
-    #             new_y=YPos.NEXT)
-    
-
     pdf.multi_cell(w = 0,
                    text = markdown_text,
                    markdown = True)
@@ -159,7 +148,7 @@ def generate_reset_button(col : DeltaGenerator):
         st.session_state.poulish_main_dough_ratio = INIT_POULISH_MAIN_RATIO
         st.session_state.total_pizzas = INIT_N_PIZZAS
         st.session_state.weight_per_pizza = INIT_WEIGHT_PER_PIZZA
-        st.session_state.key_ingredient = Ingredients.FLOUR.value
+        st.session_state.key_ingredient = str(Ingredients.FLOUR)
         update_ingredients_table(INIT_POULISH_MAIN_RATIO)
 
 def generate_print_button(col : DeltaGenerator):
@@ -204,7 +193,7 @@ def generate_base_settings(expander: DeltaGenerator):
                         key = 'key_ingredient_slider',
                         min_value = 0.,
                         max_value = 10_000.,
-                        value=INIT_FLOUR,
+                        # value=INIT_FLOUR,
                         step=50.,
                         on_change = update_key_ing_input)
 
