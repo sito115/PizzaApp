@@ -150,7 +150,7 @@ def generate_reset_button(col : DeltaGenerator):
         st.session_state.total_pizzas = INIT_N_PIZZAS
         st.session_state.weight_per_pizza = INIT_WEIGHT_PER_PIZZA
         st.session_state.key_ingredient = str(Ingredients.FLOUR)
-        update_ingredients_table(INIT_POULISH_MAIN_RATIO)
+        update_ingredients_table(st.session_state.poulish_main_dough_ratio)
 
 def generate_print_button(col : DeltaGenerator):
     col.button('Generate PDF from recipe (not formatted yet)', key='is_download_pdf')
