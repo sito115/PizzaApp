@@ -11,7 +11,7 @@ INIT_FLOUR: float = 1000.
 INIT_HYDRATION: float = 0.7
 INIT_POULISH_MAIN_RATIO: float = 0.3
 INIT_WEIGHT_PER_PIZZA: float = 250.
-PAGE_TITLE = 'Pizza Dough Calculator 1.1'
+PAGE_TITLE = 'Pizza Dough Calculator 1.2'
 
 poulish_ingredients: dict[str, Union[float, int]] = {
     str(Ingredients.FLOUR): 300,
@@ -65,7 +65,7 @@ def update_poulish_main_dough_ratio():
     st.session_state['poulish'].upgrade_ingredients_proportion(str(Ingredients.FLOUR),
                                                                st.session_state.poulish_main_dough_ratio*total_flour,
                                                                [str(Ingredients.FLOUR),
-                                                                               str(Ingredients.WATER)
+                                                                str(Ingredients.WATER)
                                                                ])
     st.session_state['main_dough'].upgrade_ingredients_proportion(str(Ingredients.FLOUR),
                                                                   (1 - st.session_state.poulish_main_dough_ratio)*total_flour,
@@ -153,10 +153,14 @@ def generate_reset_button(col : DeltaGenerator):
         st.session_state.key_ingredient_slider = INIT_FLOUR
         st.session_state.hydration = INIT_HYDRATION
         st.session_state.poulish_main_dough_ratio = INIT_POULISH_MAIN_RATIO
+        st.session_state.key_ingredient = str(Ingredients.FLOUR)
+
+        st.session_state['poulish'] = Dough(ingredients = poulish_ingredients)
+        st.session_state['main_dough'] = Dough(ingredients = main_dough_ingredients)
+
+        update_ingredients_table(st.session_state.poulish_main_dough_ratio)
         st.session_state.total_pizzas = INIT_N_PIZZAS
         st.session_state.weight_per_pizza = INIT_WEIGHT_PER_PIZZA
-        st.session_state.key_ingredient = str(Ingredients.FLOUR)
-        update_ingredients_table(st.session_state.poulish_main_dough_ratio)
 
 def generate_print_button(col : DeltaGenerator):
     col.button('Generate PDF from recipe (not formatted yet)', key='is_download_pdf')
@@ -223,7 +227,7 @@ def generate_base_settings(expander: DeltaGenerator):
 def generate_advanced_settings(expander: DeltaGenerator):
     with expander:
         
-        st.slider('Poulish - Main Dough Ratio [%]',
+        st.slider('Poulish - Main Dough Ratio [%] (needs to be updated)',
                     key = 'poulish_main_dough_ratio',
                     min_value = 0.,
                     max_value = 1.,
