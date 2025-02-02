@@ -222,29 +222,37 @@ def generate_advanced_settings(expander: DeltaGenerator):
                     min_value = 0.,
                     max_value = 1.,
                     value=INIT_POULISH_MAIN_RATIO,
-                    on_change=update_poulish_main_dough_ratio)
+                    on_change=update_poulish_main_dough_ratio,
+                    help = 'How much poulish dough in relation to the main dough.')
 
         st.slider('Hydration [%]',
                     key = 'hydration',
                     min_value = 0.,
                     max_value = 1.,
                     value=INIT_HYDRATION,
-                    on_change=update_ingredients_table)
+                    on_change=update_ingredients_table,
+                    help = 'E.g. a hydration of 70% means that in the final dough the water to flour ration is 70%.')
 
 
 def main():
 
     initilise_session()
 
-    st.set_page_config(page_title=PAGE_TITLE)
+    st.set_page_config(page_title=PAGE_TITLE,
+                       page_icon = ':pizza:')
+    st.write("[![Star](https://img.shields.io/github/stars/sito115/PizzaApp.svg?logo=github&style=social)](https://github.com/sito115/PizzaApp)")
 
-    st.image('Pizza.jpg', use_column_width=True)
+
+    st.image('Pizza.jpg', use_container_width=True)
+    st.title(PAGE_TITLE)
 
     left_column, right_column = st.columns(2)
     generate_reset_button(left_column)
     generate_print_button(right_column)
 
-    st.title(PAGE_TITLE)
+    expand_recipe = st.expander('Recipe')
+    with expand_recipe:
+        st.write(st.session_state.recipe_text)
 
     expand_base = st.expander('Base Settings', expanded=True)
     generate_base_settings(expand_base)
@@ -266,9 +274,7 @@ def main():
                     column_config=None,
                     key = 'table_dough')                              
 
-    expand_recipe = st.expander('Recipe')
-    with expand_recipe:
-        st.write(st.session_state.recipe_text)
+
         
     # st.write(st.session_state)
 
