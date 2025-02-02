@@ -43,12 +43,17 @@ class Dough(BaseModel):
         else:
             return 0.
 
-    def upgrade_ingredients_proportion(self, key: str, value : Union[int, float]) -> None:
+    def upgrade_ingredients_proportion(self, key: str, value : Union[int, float], keys_2_apply: list[str] = []) -> None:
         if value == 0:
             return
+        
+        if len(keys_2_apply) == 0:
+            keys_2_apply = self.ingredients.keys()
+
         scale = value / self.ingredients[key]
         for key_ in self.ingredients.keys():
-            self.ingredients[key_] *= scale
+            if key_ in keys_2_apply:
+                self.ingredients[key_] *= scale
             
     def upgrade_liquid_from_hydration(self, new_hydration: float) -> None:
         if np.isnan(self._hydration): return

@@ -63,9 +63,15 @@ def update_poulish_main_dough_ratio():
     total_flour = poulish_flour + main_dough_flour
 
     st.session_state['poulish'].upgrade_ingredients_proportion(str(Ingredients.FLOUR),
-                                                               st.session_state.poulish_main_dough_ratio*total_flour)
+                                                               st.session_state.poulish_main_dough_ratio*total_flour,
+                                                               [str(Ingredients.FLOUR),
+                                                                               str(Ingredients.WATER)
+                                                               ])
     st.session_state['main_dough'].upgrade_ingredients_proportion(str(Ingredients.FLOUR),
-                                                                  (1 - st.session_state.poulish_main_dough_ratio)*total_flour)   
+                                                                  (1 - st.session_state.poulish_main_dough_ratio)*total_flour,
+                                                                 [str(Ingredients.FLOUR),
+                                                                  str(Ingredients.WATER)
+                                                               ])
 
 
 
