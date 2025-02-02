@@ -7,7 +7,6 @@ from fpdf.enums import XPos, YPos
 import numpy as np
 from streamlit.delta_generator import DeltaGenerator
 
-
 INIT_FLOUR: float = 1000.
 INIT_HYDRATION: float = 0.7
 INIT_POULISH_MAIN_RATIO: float = 0.3
@@ -112,6 +111,8 @@ def initilise_session():
 
     if 'key_ingredient_input' not in st.session_state:
         st.session_state['key_ingredient_input'] = INIT_FLOUR 
+
+    st.session_state.key_ingredient_slider = st.session_state.key_ingredient_input
 
     st.session_state['total_sum'] = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
 

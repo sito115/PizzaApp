@@ -6,7 +6,7 @@ import numpy as np
 class Ingredients(Enum):
     FLOUR  = 'Flour [g]'
     WATER  = 'Water [L]'
-    YEAST  = 'Yeast [g]'
+    YEAST  = 'Fresh Yeast [g]'
     SALT   = 'Salt [g]'
     HONEY  = 'Honey [g]'
     OLIVE_OIL = 'Olive Oil [g]'
