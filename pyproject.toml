@@ -1,19 +1,13 @@
-[tool.poetry]
-name = "wordpress"
-version = "0.1.0"
-description = ""
-authors = ["sito115 <thomas@esimad.de>"]
+[project]
+name = "pizza_streamlit"
+version = "1.2.0"
+description = "Add your description here"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-pydantic = "^2.9.2"
-pypdf2 = "^3.0.1"
-spire-pdf = "^10.8.1"
-markdown2 = "^2.5.0"
-fpdf2 = "^2.7.9"
-streamlit = "^1.41.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.11"
+dependencies = [
+    "fpdf2>=2.8.3",
+    "mistletoe>=1.4.0",
+    "numpy>=2.2.6",
+    "pandas>=2.2.3",
+    "streamlit>=1.45.1",
+]

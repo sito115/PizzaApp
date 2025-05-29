@@ -1,9 +1,9 @@
-from enum import Enum
-from pydantic import BaseModel, computed_field, PrivateAttr, field_validator
-from typing import Union
+from enum import StrEnum
 import numpy as np
+from dataclasses import dataclass
+import pandas as pd
 
-class Ingredients(Enum):
+class Ingredients(StrEnum):
     FLOUR  = 'Flour [g]'
     WATER  = 'Water [L]'
     YEAST  = 'Fresh Yeast [g]'
@@ -11,21 +11,19 @@ class Ingredients(Enum):
     HONEY  = 'Honey [g]'
     OLIVE_OIL = 'Olive Oil [g]'
 
-    def __str__(self):
-        return self.value
 
-class Dough(BaseModel):
-    ingredients: dict[str, Union[int, float]]
+@dataclass
+class Dough():
+    ingredients_df: pd.DataFrame
     _hydration: float = np.nan
-    
-    @field_validator('ingredients')
-    @classmethod
-    def dough_contains_liquid(cls, val : dict[str, Union[int, float]]) -> dict[str, Union[int, float]]:
-        keys_2_check = {Ingredients.WATER.value, Ingredients.FLOUR.value}
-        if not keys_2_check.issubset(val.keys()):
-            raise ValueError(f'Dough must contain {keys_2_check}')
-        return val
-        
+
+    def __post_init__(self):
+        # Enforce that 'Value' column is numeric
+        self.ingredients_df['Value'] = pd.to_numeric(self.ingredients_df['Value'], errors='coerce')
+
+    def total_sum(self) -> float:
+        return self.ingredients_df['Value'].sum()
+
     @property
     def hydration(self):
         return self._hydration
@@ -37,36 +35,30 @@ class Dough(BaseModel):
         else:
             print(f'{value=} not allowed for hydration ]0,1]')
 
-    def get_ingredient_quantity(self, key: str) -> float:
-        if key in self.ingredients.keys():
-            return self.ingredients[key]
-        else:
-            return 0.
-
-    def upgrade_ingredients_proportion(self, key: str, value : Union[int, float], keys_2_apply: list[str] = []) -> None:
-        if value == 0:
+    def scale_ingredients(self, scale_factor: float) -> None:
+        if scale_factor <= 0:
             return
-        
-        if len(keys_2_apply) == 0:
-            keys_2_apply = self.ingredients.keys()
+        self.ingredients_df['Value'] *= scale_factor
 
-        scale = value / self.ingredients[key]
-        for key_ in self.ingredients.keys():
-            if key_ in keys_2_apply:
-                self.ingredients[key_] *= scale
-            
-    def upgrade_liquid_from_hydration(self, new_hydration: float) -> None:
-        if np.isnan(self._hydration): return
+    def scale_ingredient_new_quantity(self, key: Ingredients, new_quantity: float) -> None:
+        assert key in self.ingredients_df.index
+        old_quantity  = self.get_ingredient_quantity(key)
+        scale_factor = new_quantity / old_quantity
+        self.ingredients_df['Value'] *= scale_factor
+
+    def get_ingredient_quantity(self, key: Ingredients) -> float:
+        if key not in self.ingredients_df.index:
+            return 0.
+        value = self.ingredients_df.loc[key, 'Value']
+        numeric_value = pd.to_numeric(value, errors='coerce')
+        return float(numeric_value) if not pd.isna(numeric_value) else 0.
+    
+    def upgrade_ingredients_from_hydration(self, new_hydration: float) -> None:
         if new_hydration == self.hydration: return
         old_hydration = self.hydration
         self.hydration = new_hydration
-        self.ingredients[Ingredients.WATER.value] = self.hydration / old_hydration * self.ingredients[Ingredients.WATER.value] 
-
-    def total_sum(self) -> float:
-        return sum(self.ingredients.values())
-    
-    def scale_all_ingredients(self, factor: float) -> None:
-        if factor <= 0:
-            return
-        for key in self.ingredients.keys():
-            self.ingredients[key] *= factor
+        scale_factor = self.hydration / old_hydration
+        val = pd.to_numeric(self.ingredients_df.loc[Ingredients.WATER.value, 'Value'], errors='coerce')
+        if pd.isna(val):
+            raise ValueError(f"Invalid value for WATER: {val}")
+        self.ingredients_df.loc[Ingredients.WATER.value, 'Value'] = val * scale_factor
