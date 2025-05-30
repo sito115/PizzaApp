@@ -1,5 +1,5 @@
 [project]
-name = "pizza_streamlit"
+name = "pizza_app"
 version = "1.2.0"
 description = "Add your description here"
 readme = "README.md"
@@ -11,3 +11,7 @@ dependencies = [
     "pandas>=2.2.3",
     "streamlit>=1.45.1",
 ]
+
+[build-system]
+requires = ["uv_build>=0.7.8,<0.8.0"]
+build-backend = "uv_build"
