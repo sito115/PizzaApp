@@ -14,12 +14,12 @@ def generate_recipe_pdf(markdown_text: str) -> io.BytesIO:
     return io.BytesIO(pdf.output())
 
 
-def generate_print_button(col : DeltaGenerator):
+def generate_print_button(col : DeltaGenerator, recipe: str):
     col.button('Get the recipe as PDF! :open_book:', key='is_download_pdf')
     if st.session_state.is_download_pdf:
         col.download_button(
         label='Download',
-        data=generate_recipe_pdf(st.session_state.recipe_text),
+        data=generate_recipe_pdf(recipe),
         file_name='pizza_recipe.pdf',
         mime='application/pdf'
         )   

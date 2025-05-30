@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 from typing import Union
-from dough_class import Ingredients, Dough
 from streamlit.delta_generator import DeltaGenerator
+from pathlib import Path
+import sys
+sys.path.insert(0 , str(Path(__file__).parents[1]))
 from helpers import generate_print_button
-
+from dough_class import Ingredients, Dough
 
 INIT_FLOUR: float = 1000.
 INIT_HYDRATION: float = 0.7
@@ -16,7 +18,7 @@ PAGE_TITLE = 'Pizza Dough Calculator 1.2'
 poulish_ingredients: dict[str, Union[float, int]] = {
     Ingredients.FLOUR: 300,
     Ingredients.WATER: 300,
-    Ingredients.YEAST: 6,
+    Ingredients.FRESH_YEAST: 6,
     Ingredients.HONEY: 5,
 }
 
@@ -30,7 +32,7 @@ main_dough_ingredients: dict[str, Union[float, int]] = {
 poulish_dough = Dough(ingredients_df = pd.DataFrame([300, 300, 6, 5],
                                                     columns=['Value'], 
                                                     index = [Ingredients.FLOUR, Ingredients.WATER,
-                                                            Ingredients.YEAST, Ingredients.HONEY]))
+                                                            Ingredients.FRESH_YEAST, Ingredients.HONEY]))
 
 main_dough = Dough(ingredients_df = pd.DataFrame([700, 400, 10, 25],
                                                 columns=['Value'],
@@ -102,18 +104,27 @@ def initilise_session():
     if 'hydration' not in st.session_state:
         st.session_state['hydration'] = INIT_HYDRATION
 
+    if 'is_dry_yeast' not in st.session_state:
+        st.session_state['is_dry_yeast'] = False
+
     st.session_state.key_ingredient_slider = st.session_state.key_ingredient_input
 
     st.session_state['total_sum'] = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
+
+    yeast_key = Ingredients.FRESH_YEAST if (Ingredients.FRESH_YEAST in st.session_state.poulish.ingredients_df.index) else Ingredients.DRY_YEAST
 
     recipe_text = f'''
 # Pizza Recipe
 
 Generated with the [Pizza Dough Calculator App](https://pizzadoughcalculator.streamlit.app/).
+
 Yields {st.session_state['total_pizzas']:.0f} pizzas à {st.session_state['weight_per_pizza']:.1f} g.
+Hydration = {st.session_state.hydration * 100} %.
+
+This recipe is inspired by Vito Iocapellis [Double Fermented Pizza Dough](https://pizzadoughcalculator.streamlit.app/)
 
 ### Poulish
-1. Dissolve {st.session_state['poulish'].get_ingredient_quantity(Ingredients.YEAST):.1f} grams of yeast in {st.session_state['poulish'].get_ingredient_quantity(Ingredients.WATER):.1f} mL of water.
+1. Dissolve {st.session_state['poulish'].get_ingredient_quantity(yeast_key.value):.1f} of {yeast_key} in {st.session_state['poulish'].get_ingredient_quantity(Ingredients.WATER):.1f} mL of water.
 2. Add {st.session_state['poulish'].get_ingredient_quantity(Ingredients.HONEY):.1f} g of honey and dissolve.
 3. Add {st.session_state['poulish'].get_ingredient_quantity(Ingredients.FLOUR):.1f} g of flour and mix.
 4. Cover the poulish in an airtight  container and let it rest for 30 min at room temperature.
@@ -218,6 +229,21 @@ def generate_advanced_settings(expander: DeltaGenerator):
                     on_change=update_ingredients_table,
                     help = 'E.g. a hydration of 70% means that in the final dough the water to flour ration is 70%.')
 
+        def change_yeast():
+            if st.session_state.is_dry_yeast:
+                st.session_state['poulish'].ingredients_df.loc[Ingredients.FRESH_YEAST, "Value"] *= 0.5
+                st.session_state['poulish'].ingredients_df.rename(index={Ingredients.FRESH_YEAST : Ingredients.DRY_YEAST}, inplace = True)
+            else:
+                # if Ingredients.DRY_YEAST in st.session_state['poulish'].ingredients_df.index:
+                st.session_state['poulish'].ingredients_df.loc[Ingredients.DRY_YEAST, "Value"] *= 2
+                st.session_state['poulish'].ingredients_df.rename(index={Ingredients.DRY_YEAST : Ingredients.FRESH_YEAST}, inplace = True)
+
+        st.checkbox('Dry yeast',
+                    value=False,
+                    key='is_dry_yeast',
+                    on_change=change_yeast,
+                    help=None)
+        
 
 def main():
 
@@ -228,12 +254,12 @@ def main():
     st.write("[![Star](https://img.shields.io/github/stars/sito115/PizzaApp.svg?logo=github&style=social)](https://github.com/sito115/PizzaApp)")
 
 
-    st.image('Pizza.jpg', use_container_width=True)
+    st.image( Path(__file__).parents[2] / "data" / 'Pizza.jpg', use_container_width=True)
     st.title(PAGE_TITLE)
 
     left_column, right_column = st.columns(2)
     generate_reset_button(left_column)
-    generate_print_button(right_column)
+    generate_print_button(right_column, st.session_state.recipe_text)
 
     expand_recipe = st.expander('Recipe')
     with expand_recipe:
@@ -261,7 +287,7 @@ def main():
 
 
         
-    # st.write(st.session_state)
+    st.write(st.session_state)
 
 
 if __name__ == '__main__':
