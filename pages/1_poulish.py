@@ -254,7 +254,7 @@ def main():
     st.write("[![Star](https://img.shields.io/github/stars/sito115/PizzaApp.svg?logo=github&style=social)](https://github.com/sito115/PizzaApp)")
 
 
-    st.image(  'data/Pizza.jpg', use_container_width=True)
+    st.image(Path('data/Pizza.jpg'), use_container_width=True)
     st.title(PAGE_TITLE)
 
     left_column, right_column = st.columns(2)
