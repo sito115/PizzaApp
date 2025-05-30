@@ -121,7 +121,7 @@ Generated with the [Pizza Dough Calculator App](https://pizzadoughcalculator.str
 Yields {st.session_state['total_pizzas']:.0f} pizzas à {st.session_state['weight_per_pizza']:.1f} g.
 Hydration = {st.session_state.hydration * 100} %.
 
-This recipe is inspired by Vito Iocapellis [Double Fermented Pizza Dough](https://pizzadoughcalculator.streamlit.app/)
+This recipe is inspired by Vito Iocapellis [Double Fermented Pizza Dough](https://www.youtube.com/watch?v=u7Hd6ZzKgBM&t=1s)
 
 ### Poulish
 1. Dissolve {st.session_state['poulish'].get_ingredient_quantity(yeast_key.value):.1f} of {yeast_key} in {st.session_state['poulish'].get_ingredient_quantity(Ingredients.WATER):.1f} mL of water.
@@ -254,7 +254,7 @@ def main():
     st.write("[![Star](https://img.shields.io/github/stars/sito115/PizzaApp.svg?logo=github&style=social)](https://github.com/sito115/PizzaApp)")
 
 
-    st.image('Pizza.jpg', use_container_width=True)
+    st.image('data/Pizza.jpg', use_container_width=True)
     st.title(PAGE_TITLE)
 
     left_column, right_column = st.columns(2)
