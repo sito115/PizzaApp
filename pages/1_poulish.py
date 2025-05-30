@@ -119,6 +119,7 @@ def initilise_session():
 Generated with the [Pizza Dough Calculator App](https://pizzadoughcalculator.streamlit.app/).
 
 Yields {st.session_state['total_pizzas']:.0f} pizzas à {st.session_state['weight_per_pizza']:.1f} g.
+
 Hydration = {st.session_state.hydration * 100} %.
 
 This recipe is inspired by Vito Iocapellis [Double Fermented Pizza Dough](https://www.youtube.com/watch?v=u7Hd6ZzKgBM&t=1s)
