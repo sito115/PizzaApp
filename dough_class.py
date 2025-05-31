@@ -5,12 +5,13 @@ import pandas as pd
 
 class Ingredients(StrEnum):
     FLOUR  = 'Flour [g]'
-    WATER  = 'Water [L]'
+    WATER  = 'Water [mL]'
     FRESH_YEAST  = 'Fresh Yeast [g]'
     DRY_YEAST  = 'Dry Yeast [g]'
     SALT   = 'Salt [g]'
     HONEY  = 'Honey [g]'
     OLIVE_OIL = 'Olive Oil [g]'
+    MOTHER_YEAST = 'Mother Yeast [g]'
 
 
 @dataclass

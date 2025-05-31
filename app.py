@@ -3,8 +3,8 @@
 import streamlit as st
 
 pages = [
-    st.Page("pages/1_poulish.py", title="Double Fermented Pizza Dough", default=True),
-    # st.Page("pages/2_sour_dough.py", title="Sour Dough Pizza Dough"),
+    st.Page("pages/1_poulish.py", title="Double Fermented Pizza Dough"),
+    st.Page("pages/2_sour_dough.py", title="Sour Dough Pizza Dough"),
 ]
 
 

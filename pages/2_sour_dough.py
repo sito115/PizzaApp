@@ -8,37 +8,42 @@ from helpers import generate_print_button
 from dough_class import Ingredients, Dough
 
 
-
-INIT_FLOUR: float = 1000.
-INIT_HYDRATION: float = 0.7
+INIT_FLOUR: float = 250 + 460.
+INIT_HYDRATION: float = 0.68
 INIT_POULISH_MAIN_RATIO: float = 0.3
 INIT_WEIGHT_PER_PIZZA: float = 250.
 PAGE_TITLE = 'Pizza Dough Calculator 1.2'
 
-
-poulish_dough = Dough(ingredients_df = pd.DataFrame([300, 300, 6, 5],
+mother_yeast = Dough(ingredients_df = pd.DataFrame([250, 170, 250],
                                                     columns=['Value'], 
                                                     index = [Ingredients.FLOUR, Ingredients.WATER,
-                                                            Ingredients.FRESH_YEAST, Ingredients.HONEY]))
+                                                            Ingredients.MOTHER_YEAST]))
 
-main_dough = Dough(ingredients_df = pd.DataFrame([700, 400, 10, 25],
+main_dough = Dough(ingredients_df = pd.DataFrame([460, 300, 10, 10],
                                                 columns=['Value'],
                                                 index = [Ingredients.FLOUR, Ingredients.WATER,
                                                         Ingredients.OLIVE_OIL, Ingredients.SALT]))
+
+
+
 main_dough.hydration = INIT_HYDRATION
 
-INIT_N_PIZZAS = (poulish_dough.total_sum() + main_dough.total_sum()) / INIT_WEIGHT_PER_PIZZA
+INIT_N_PIZZAS = (mother_yeast.total_sum() - mother_yeast.get_ingredient_quantity(Ingredients.MOTHER_YEAST) + main_dough.total_sum()) / INIT_WEIGHT_PER_PIZZA
 
 
 
 def update_ingredients_table():
-    st.session_state['main_dough'].upgrade_ingredients_from_hydration(st.session_state.hydration)
+    st.session_state['main_dough_s'].upgrade_ingredients_from_hydration(st.session_state.hydration)
 
-    st.session_state['poulish'].scale_ingredient_new_quantity(st.session_state.key_ingredient,
-                                                               st.session_state.poulish_main_dough_ratio*st.session_state.key_ingredient_input)
-    st.session_state['main_dough'].scale_ingredient_new_quantity(st.session_state.key_ingredient,
-                                                                  (1 - st.session_state.poulish_main_dough_ratio)* st.session_state.key_ingredient_input)    
-    total_sum = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
+    amount_main = st.session_state['mother_dough'].get_ingredient_quantity(st.session_state.key_ingredient)
+    amount_sour = st.session_state['main_dough_s'].get_ingredient_quantity(st.session_state.key_ingredient)
+    ratio = amount_sour / amount_main
+
+    st.session_state['mother_dough'].scale_ingredient_new_quantity(st.session_state.key_ingredient,
+                                                                  ratio*st.session_state.key_ingredient_input)
+    st.session_state['main_dough_s'].scale_ingredient_new_quantity(st.session_state.key_ingredient,
+                                                                  (1 - ratio)* st.session_state.key_ingredient_input)    
+    total_sum = st.session_state['mother_dough'].total_sum() - st.session_state['mother_dough'].get_ingredient_quantity(Ingredients.MOTHER_YEAST) + st.session_state['main_dough_s'].total_sum()
     st.session_state['total_pizzas'] = total_sum / st.session_state.weight_per_pizza
 
 
@@ -53,28 +58,28 @@ def update_key_ing_slider():
 
 
 def view_key_ingredient_quantities():
-    poulish_quantity = st.session_state['poulish'].get_ingredient_quantity(st.session_state.key_ingredient) 
-    main_dough_quantity = st.session_state['main_dough'].get_ingredient_quantity(st.session_state.key_ingredient) 
+    poulish_quantity = st.session_state['mother_dough'].get_ingredient_quantity(st.session_state.key_ingredient) 
+    main_dough_quantity = st.session_state['main_dough_s'].get_ingredient_quantity(st.session_state.key_ingredient) 
     st.session_state.key_ingredient_input = poulish_quantity + main_dough_quantity
     st.session_state.key_ingredient_slider = poulish_quantity + main_dough_quantity
 
 
 def update_total_pizza_amount():
-    current_amount = st.session_state['total_sum']
+    current_amount = st.session_state['total_sum'] - st.session_state['mother_dough'].get_ingredient_quantity(Ingredients.MOTHER_YEAST)
     new_amount = st.session_state['total_pizzas'] * st.session_state['weight_per_pizza']
     factor = new_amount / current_amount
-    st.session_state['poulish'].scale_ingredients(factor)
-    st.session_state['main_dough'].scale_ingredients(factor)
+    st.session_state['mother_dough'].scale_ingredients(factor)
+    st.session_state['main_dough_s'].scale_ingredients(factor)
     view_key_ingredient_quantities()
 
 
 def initilise_session():
-    if 'poulish' not in st.session_state:
-        st.session_state['poulish'] = poulish_dough
+    if 'mother_dough' not in st.session_state:
+        st.session_state['mother_dough'] = mother_yeast
 
-    if 'main_dough' not in st.session_state:
-        st.session_state['main_dough'] = main_dough
-        st.session_state['main_dough'].hydration = INIT_HYDRATION
+    if 'main_dough_s' not in st.session_state:
+        st.session_state['main_dough_s'] = main_dough
+        st.session_state['main_dough_s'].hydration = INIT_HYDRATION
     
     if 'total_pizzas' not in st.session_state:
         st.session_state['total_pizzas'] = INIT_N_PIZZAS
@@ -85,72 +90,38 @@ def initilise_session():
     if 'key_ingredient_input' not in st.session_state:
         st.session_state['key_ingredient_input'] = INIT_FLOUR 
 
-    if 'poulish_main_dough_ratio' not in st.session_state:    
-        st.session_state['poulish_main_dough_ratio'] = INIT_POULISH_MAIN_RATIO
-
     if 'hydration' not in st.session_state:
         st.session_state['hydration'] = INIT_HYDRATION
 
-    if 'is_dry_yeast' not in st.session_state:
-        st.session_state['is_dry_yeast'] = False
-
     st.session_state.key_ingredient_slider = st.session_state.key_ingredient_input
 
-    st.session_state['total_sum'] = st.session_state['poulish'].total_sum() + st.session_state['main_dough'].total_sum()
-
-    yeast_key = Ingredients.FRESH_YEAST if (Ingredients.FRESH_YEAST in st.session_state.poulish.ingredients_df.index) else Ingredients.DRY_YEAST
+    st.session_state['total_sum'] = st.session_state['mother_dough'].total_sum() - st.session_state['mother_dough'].get_ingredient_quantity(Ingredients.MOTHER_YEAST) + st.session_state['main_dough_s'].total_sum()
 
     recipe_text = f'''
 # Pizza Recipe
 
 Generated with the [Pizza Dough Calculator App](https://pizzadoughcalculator.streamlit.app/).
 
-Yields {st.session_state['total_pizzas']:.0f} pizzas à {st.session_state['weight_per_pizza']:.1f} g.
-
-Hydration = {st.session_state.hydration * 100} %.
-
-This recipe is inspired by Vito Iocapellis [Double Fermented Pizza Dough](https://www.youtube.com/watch?v=u7Hd6ZzKgBM&t=1s)
-
-### Poulish
-1. Dissolve {st.session_state['poulish'].get_ingredient_quantity(yeast_key.value):.1f} of {yeast_key} in {st.session_state['poulish'].get_ingredient_quantity(Ingredients.WATER):.1f} mL of water.
-2. Add {st.session_state['poulish'].get_ingredient_quantity(Ingredients.HONEY):.1f} g of honey and dissolve.
-3. Add {st.session_state['poulish'].get_ingredient_quantity(Ingredients.FLOUR):.1f} g of flour and mix.
-4. Cover the poulish in an airtight  container and let it rest for 30 min at room temperature.
-5. Then, put it in the frigde for 16 - 24h.
-
-### Main Dough
-1. Take the poulish out of the fridge ca. 30 min before starting the main dough.
-2. Add {st.session_state['main_dough'].get_ingredient_quantity(Ingredients.WATER):.1f} mL and dissolve the poulish.
-3. Add {st.session_state['main_dough'].get_ingredient_quantity(Ingredients.FLOUR):.1f} g of flour and knead for 10 min.
-4. Add {st.session_state['main_dough'].get_ingredient_quantity(Ingredients.SALT):.1f} g of salt and knead for 5 min.
-5. When the dough starts to become stick, add {st.session_state['main_dough'].get_ingredient_quantity(Ingredients.OLIVE_OIL):.1f} g of olive oil.
-6. Then, place the dough in the frigde for 16 - 24h.
-7. Take the dough out of the fridge ca. 30 min before forming the doigh balls. 
-8. Divide the dough into {st.session_state['total_pizzas']:.0f} balls à {st.session_state['weight_per_pizza']:.1f} g.
-9. Let them rest for min. 1.5 h.
 '''
         
-    st.session_state['recipe_text'] = recipe_text
+    st.session_state['recipe_text_s'] = recipe_text
 
 
 def generate_reset_button(col : DeltaGenerator):
     col.button('Reset', key='is_reset', on_click=reset)
-    
-    
+
 def reset():
     st.session_state.key_ingredient_input = INIT_FLOUR
     st.session_state.key_ingredient_slider = INIT_FLOUR
     st.session_state.hydration = INIT_HYDRATION
-    st.session_state.poulish_main_dough_ratio = INIT_POULISH_MAIN_RATIO
     st.session_state.key_ingredient =Ingredients.FLOUR
 
-    st.session_state['poulish'] = poulish_dough
-    st.session_state['main_dough'] = main_dough
+    st.session_state['mother_dough'] = mother_yeast
+    st.session_state['main_dough_s'] = main_dough
 
     update_ingredients_table()
     st.session_state.total_pizzas = INIT_N_PIZZAS
     st.session_state.weight_per_pizza = INIT_WEIGHT_PER_PIZZA
-
 
 def generate_base_settings(expander: DeltaGenerator):
     with expander:
@@ -198,43 +169,21 @@ def generate_base_settings(expander: DeltaGenerator):
                             on_change= update_total_pizza_amount)
             
             st.write(f'Total weight is ca. {st.session_state.total_sum:,.2f} g.')
-            st.write(f'Total weight results in ca. {st.session_state.total_sum/st.session_state.weight_per_pizza:.0f} Pizzas a {st.session_state.weight_per_pizza} g.')    
+            st.write(f'Total weight results in ca. {st.session_state.total_sum /st.session_state.weight_per_pizza:.0f} Pizzas a {st.session_state.weight_per_pizza} g.')    
 
 def generate_advanced_settings(expander: DeltaGenerator):
     with expander:
         
-        st.slider('Poulish - Main Dough Ratio [%]',
-                    key = 'poulish_main_dough_ratio',
-                    min_value = 0.,
-                    max_value = 1.,
-                    on_change=update_ingredients_table,
-                    help = 'How much poulish dough in relation to the main dough.')
-
         st.slider('Hydration [%]',
                     key = 'hydration',
                     min_value = 0.,
                     max_value = 1.,
                     on_change=update_ingredients_table,
                     help = 'E.g. a hydration of 70% means that in the final dough the water to flour ration is 70%.')
-
-        def change_yeast():
-            if st.session_state.is_dry_yeast:
-                st.session_state['poulish'].ingredients_df.loc[Ingredients.FRESH_YEAST, "Value"] *= 0.5
-                st.session_state['poulish'].ingredients_df.rename(index={Ingredients.FRESH_YEAST : Ingredients.DRY_YEAST}, inplace = True)
-            else:
-                # if Ingredients.DRY_YEAST in st.session_state['poulish'].ingredients_df.index:
-                st.session_state['poulish'].ingredients_df.loc[Ingredients.DRY_YEAST, "Value"] *= 2
-                st.session_state['poulish'].ingredients_df.rename(index={Ingredients.DRY_YEAST : Ingredients.FRESH_YEAST}, inplace = True)
-
-        st.checkbox('Dry yeast',
-                    value=False,
-                    key='is_dry_yeast',
-                    on_change=change_yeast,
-                    help=None)
         
 
 def main():
-    # st.set_page_config(page_title="Plotting Demo", page_icon="📈")
+    # st.set_page_config(page_title="Mapping Demo", page_icon="🌍")
 
     initilise_session()
 
@@ -248,11 +197,11 @@ def main():
 
     left_column, right_column = st.columns(2)
     generate_reset_button(left_column)
-    generate_print_button(right_column, st.session_state.recipe_text)
+    generate_print_button(right_column, st.session_state.recipe_text_s)
 
     expand_recipe = st.expander('Recipe')
     with expand_recipe:
-        st.write(st.session_state.recipe_text)
+        st.write(st.session_state.recipe_text_s)
 
     expand_base = st.expander('Base Settings', expanded=True)
     generate_base_settings(expand_base)
@@ -264,12 +213,12 @@ def main():
     expand_ingredients = st.expander('Ingredients', expanded=True)
     with expand_ingredients:
 
-        st.dataframe(st.session_state['poulish'].ingredients_df,
+        st.dataframe(st.session_state['mother_dough'].ingredients_df,
                     use_container_width = True,
                     column_config=None,
                     key = 'table_poulish')           
 
-        st.dataframe(st.session_state['main_dough'].ingredients_df,
+        st.dataframe(st.session_state['main_dough_s'].ingredients_df,
                     use_container_width = True,
                     column_config=None,
                     key = 'table_dough')                              
