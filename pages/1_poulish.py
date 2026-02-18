@@ -16,7 +16,7 @@ INIT_WEIGHT_PER_PIZZA: float = 250.
 PAGE_TITLE = 'Pizza Dough Calculator 1.2'
 
 
-poulish_dough = Dough(ingredients_df = pd.DataFrame([300, 300, 6, 5],
+poulish_dough = Dough(ingredients_df = pd.DataFrame([300, 300, 5, 5],
                                                     columns=['Value'], 
                                                     index = [Ingredients.FLOUR, Ingredients.WATER,
                                                             Ingredients.FRESH_YEAST, Ingredients.HONEY]))
